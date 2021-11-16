@@ -1,0 +1,241 @@
+FROM nvidia/cuda:10.1-cudnn7-devel-ubuntu18.04
+ENV LC_ALL C.UTF-8
+ENV LANG   C.UTF-8
+
+ENV ZCM_DEFAULT_URL=ipc
+
+WORKDIR /bak
+### func 1: upgrade the system
+RUN mv /etc/apt/sources.list.d/cuda.list /etc/apt/sources.list.d/cuda.list.bak &&\
+    mv /etc/apt/sources.list.d/nvidia-ml.list /etc/apt/sources.list.d/nvidia-ml.list.bak &&\
+	apt-get update && apt-get upgrade -y && apt-get install -y software-properties-common apt-utils
+
+### func 2: install dependencies
+# func 2.1: install system pkgs
+RUN apt-get install -y \
+    build-essential \ 
+    bison \
+    checkinstall \
+    clang \
+    cython \
+    cython3 \
+    debhelper \
+    dh-make \
+    flex \
+    fuse \
+    gcc \
+    git \
+    g++ \
+    libadolc-dev \
+    libblas-dev \
+    libboost-all-dev \ 
+    libcanberra-gtk-module \
+    libcanberra-gtk3-module \
+    libelf-dev \
+    libflann-dev \              
+    libgtk2.0-dev \
+    libgflags-dev \
+    libgl1-mesa-dev \
+    libgoogle-glog-dev \
+    libjsoncpp-dev \
+    liblapack-dev \
+    liblua5.2-dev \
+    libluabind-dev \ 
+    libompl-dev \
+    libpqxx-dev \
+    libudev-dev \
+    libusb-1.0-0 \
+    libssl-dev \
+    libxcb1-dev \
+    libxcomposite-dev \
+    libxcursor-dev \
+    libx11-dev \
+    libyaml-cpp-dev \
+    libzmq3-dev \
+    llvm-10-dev \
+    make \
+    openjdk-8-jdk-headless \
+    pkg-config \
+    python3-dev \
+    python3-pip \
+    python3-venv \
+    qtbase5-private-dev \
+    qt5-default \
+    sl \
+    wget \
+    vim \
+    v4l-utils \
+    xvfb 
+RUN sed -i 's/ universe/ universe multiverse/' /etc/apt/sources.list && \
+	apt-get update && \
+    apt-get install -y snapcraft 
+
+# func 2.2: install common python requirements
+RUN pip3 install \
+    distro \
+    easydict==1.9 \
+    fire \
+    imgaug==0.4.0 \    
+    imageio==2.8.0 \
+    colorama==0.4.4 \
+    cycler==0.10.0 \
+    decorator==4.4.2 \
+    kiwisolver==1.2.0 \
+    matplotlib==3.2.1 \
+    networkx==2.4 \
+    numpy \
+    packaging \
+    pandas \
+    psutil \
+    pytest \
+    python-dateutil \
+    pytz \
+    Pillow==7.1.1 \
+    PyWavelets==1.1.1 \
+    scikit-build \
+    scikit-image==0.16.2 \
+    scipy==1.4.1 \
+    seaborn \
+    Shapely==1.7.0 \
+    tensorboardX==2.0 \  
+    termcolor \  
+    torch==1.4.0 \
+    torchvision==0.5.0 \
+    virtualenv \
+    virtualenvwrapper \
+	--no-deps
+
+RUN  cd /bak/ && wget https://bj.bcebos.com/v1/tiev-plus/extern/clang+llvm-9.0.0-x86_64-linux-gnu-ubuntu-18.04.tar.xz &&\
+        apt-get -y install libtinfo-dev libxml2-dev &&\
+        mkdir -p /usr/local && cd /usr/local &&\
+        cp /bak/clang+llvm-9.0.0-x86_64-linux-gnu-ubuntu-18.04.tar.xz . &&\
+        tar xvf clang+llvm-9.0.0-x86_64-linux-gnu-ubuntu-18.04.tar.xz &&\
+        mv clang+llvm-9.0.0-x86_64-linux-gnu-ubuntu-18.04 llvm-9.0.0
+
+ENV PATH="/usr/local/llvm-9.0.0/bin:${PATH}"
+ENV LLVM_CONFIG="/usr/local/llvm-9.0.0/bin/llvm-config"
+RUN pip3 install llvmlite==0.33.0 numba==0.51.2 
+
+# func 2.3: install CMake
+RUN wget https://bj.bcebos.com/v1/tiev-plus/extern/cmake-3.17.2.tar.gz &&\
+    tar zvxf cmake-3.17.2.tar.gz && cd cmake-3.17.2 && ./bootstrap &&\
+    make -j8 && make install &&\
+    rm -rf cmake*
+
+# func 2.4: Install pybind11
+# RUN git clone https://github.com/pybind/pybind11.git &&\
+#        cd pybind11 && mkdir build && cd build &&\
+#        cmake .. && cmake --build . --config Release --target check
+RUN python3 -m pip install pybind11
+
+# func 2.5: Install OpenCV
+COPY ./scripts/install_opencv.sh /bak/install_opencv.sh
+RUN wget -P /bak/ https://bj.bcebos.com/v1/tiev-plus/extern/opencv.zip &&\
+        wget -P /bak/ https://bj.bcebos.com/v1/tiev-plus/extern/opencv_contrib.zip &&\
+        wget -P /bak/ https://bj.bcebos.com/v1/tiev-plus/extern/No_boostdesc_bgm.i.zip &&\
+        cd /bak/ && bash install_opencv.sh
+
+### func 3: load && install module
+#func 3.1: Install ZCM
+COPY ./scripts/install_zcm.sh /bak/install_zcm.sh
+RUN bash /bak/install_zcm.sh && rm -rf /bak/install_zcm.sh
+
+# func 3.2 Install additional GoogleTest Systemwide to enable find_package
+COPY ./modules/extern/googletest-1.10.x /bak/googletest
+RUN cd /bak/googletest && mkdir build && cd build && cmake .. && make -j4
+
+# func 3.3: Install ceres
+COPY ./scripts/install_ceres.sh /bak/scripts/install_ceres.sh
+RUN bash /bak/scripts/install_ceres.sh
+
+# func 3.4: Install pcl for slam
+RUN cd /bak && wget https://bj.bcebos.com/v1/tiev-plus/extern/pcl-1.8.1.tar.gz &&\
+	tar -zxf pcl-1.8.1.tar.gz && cd /bak/pcl-pcl-1.8.1 &&\
+        mkdir build && cd build && cmake .. && make -j16 && make install
+
+# func 3.5: install can dependence
+COPY ./modules/extern/can_library/* /lib/
+
+# func 3.6: install pylon
+WORKDIR /bak/pylon
+RUN pip3 install pyparsing &&\
+        wget -O pylon.deb https://gitlab.com/tjiv/nn_weights/-/raw/master/installers/pylon_6.1.1.19861-deb0_amd64.deb?inline=false &&\
+        dpkg -i pylon.deb; apt-get install -f &&\
+	pip3 install git+https://gitee.com/yujmo/bevutils.git@master &&\
+        rm -rf pylon.deb &&\
+        wget https://bj.bcebos.com/v1/tiev-plus/extern/pypylon-1.4.0-cp36-cp36m-linux_x86_64.whl &&\
+        pip3 install pypylon-1.4.0-cp36-cp36m-linux_x86_64.whl &&\
+        rm -rf pypylon-1.4.0-cp36-cp36m-linux_x86_64.whl
+
+# func 3.7: Install slam dependencies
+COPY ./scripts/install_carto_dependency.sh /bak/scripts/install_carto_dependency.sh
+RUN bash /bak/scripts/install_carto_dependency.sh
+
+# func 3.8: Install qt5 for mapper
+# ENV QT_QPA_PLATFORM='offscreen'
+
+### func 4: Configure related libraries
+RUN mkdir -p /tiev-plus
+
+# func 4.1: config cuda and torch environment
+ENV PYTHONPATH /tiev-plus/modules/src/lidar/second.pytorch
+RUN cp -r /usr/include/eigen3/Eigen /usr/include &&\
+	export PATH="$PATH:/usr/local/cuda/bin" &&\
+	export PATH="$PATH:/usr/local/cuda/bin/nvcc" &&\
+	ln -s /usr/local/cuda-10.1 /usr/local/cuda/
+# 	cd /tiev-plus/modules/src/lidar/second.pytorch/second/spconv/ &&\
+#	python3 setup.py bdist_wheel &&\
+# 	cd dist && pip3 install spconv*
+
+# func 4.2: Install osqp
+COPY modules/src/common/osqp/ /bak/osqp/
+RUN cd /bak/osqp/ && mkdir build && cd build && cmake .. -DBUILD_SHARED_LIBS=ON && make -j6 && make install
+
+# func 4.3: Install grpc
+
+RUN cd / && git clone https://gitee.com/tiev-plus/grpc.git \
+    && cd grpc \
+    &&  cd third_party  &&  export THIRD_PARTY_DIR=$(pwd)   \
+    &&  mkdir -p ${THIRD_PARTY_DIR}/abseil-cpp/cmake/build  &&  cd ${THIRD_PARTY_DIR}/abseil-cpp/cmake/build    \
+    &&  cmake -DCMAKE_BUILD_TYPE=Release -DCMAKE_POSITION_INDEPENDENT_CODE=TRUE ../..   \
+    &&  make -j4 install    \
+    # c-ares
+    &&  mkdir -p ${THIRD_PARTY_DIR}/cares/cares/cmake/build &&  cd ${THIRD_PARTY_DIR}/cares/cares/cmake/build   \
+    &&  cmake -DCMAKE_BUILD_TYPE=Release ../..  \
+    &&  make -j4 install    \
+    # protobuf
+    &&  mkdir -p ${THIRD_PARTY_DIR}/protobuf/cmake/build    &&  cd ${THIRD_PARTY_DIR}/protobuf/cmake/build  \
+    &&  cmake -Dprotobuf_BUILD_TESTS=OFF -DCMAKE_BUILD_TYPE=Release ..  \
+    &&  make -j4 install    \
+    # re2
+    &&  mkdir -p ${THIRD_PARTY_DIR}/re2/cmake/build &&  cd ${THIRD_PARTY_DIR}/re2/cmake/build   \
+    &&  cmake -DCMAKE_BUILD_TYPE=Release -DCMAKE_POSITION_INDEPENDENT_CODE=TRUE ../..   \
+    &&  make -j4 install    \
+    # zlib
+    &&  mkdir -p ${THIRD_PARTY_DIR}/zlib/cmake/build    &&  cd ${THIRD_PARTY_DIR}/zlib/cmake/build  \
+    &&  cmake -DCMAKE_BUILD_TYPE=Release ../..  \
+    &&  make -j4 install    \
+    # gRPC
+    &&  mkdir -p ${THIRD_PARTY_DIR}/../cmake/build  &&  cd ${THIRD_PARTY_DIR}/../cmake/build    \
+    &&  cmake ../.. \
+        -DCMAKE_BUILD_TYPE=Release  \
+        -DgRPC_INSTALL=ON   \
+        -DgRPC_BUILD_TESTS=OFF  \
+        -DgRPC_CARES_PROVIDER=package   \
+        -DgRPC_ABSL_PROVIDER=package    \
+        -DgRPC_PROTOBUF_PROVIDER=package    \
+        -DgRPC_RE2_PROVIDER=package \
+        -DgRPC_SSL_PROVIDER=package \
+        -DgRPC_ZLIB_PROVIDER=package    \
+    &&  make -j4 install  &&  cd ../../.. \
+    &&  rm -rf grpc
+#
+RUN cd / && git clone https://gitee.com/yujmo/googletest.git \
+    && cd googletest \
+    && mkdir build && cd build && cmake .. && make -j12 && make install 
+
+RUN cd /bak/ && git clone https://gitee.com/yujmo/BehaviorTree.CPP.git && cd BehaviorTree.CPP && mkdir build && cd build && cmake .. && make && make install 
+
+RUN pip3 install pytest
+#
+WORKDIR /tiev-plus

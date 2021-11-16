@@ -1,0 +1,148 @@
+FROM nvidia/cuda:10.1-cudnn7-devel-ubuntu18.04
+WORKDIR /bak
+ENV LC_ALL C.UTF-8
+ENV LANG   C.UTF-8
+
+### func 1: upgrade the system
+RUN mv /etc/apt/sources.list.d/cuda.list /etc/apt/sources.list.d/cuda.list.bak &&\
+    mv /etc/apt/sources.list.d/nvidia-ml.list /etc/apt/sources.list.d/nvidia-ml.list.bak &&\
+	apt-get update && apt-get upgrade -y && apt-get install -y software-properties-common apt-utils
+
+### func 2: install dependencies
+# func 2.1: install system pkgs
+RUN apt-get install -y \
+    build-essential \ 
+    bison \
+    checkinstall \
+    clang \
+    cython \
+    cython3 \
+    debhelper \
+    dh-make \
+    flex \
+    fuse \
+    gcc \
+    git \
+    g++ \
+    libblas-dev \
+    libboost-all-dev \ 
+    libcanberra-gtk-module \
+    libcanberra-gtk3-module \
+    libelf-dev \
+    libflann-dev \              
+    libgtk2.0-dev \
+    libgl1-mesa-dev \
+    libjsoncpp-dev \
+    liblapack-dev \
+    liblua5.2-dev \
+    libluabind-dev \ 
+    libpqxx-dev \
+    libudev-dev \
+    libusb-1.0-0 \
+    libssl-dev \
+    libxcb1-dev \
+    libxcomposite-dev \
+    libxcursor-dev \
+    libx11-dev \
+    libzmq3-dev \
+    make \
+    openjdk-8-jdk-headless \
+    pkg-config \
+    python3-dev \
+    python3-pip \
+    python3-venv \
+    qtbase5-private-dev \
+    qt5-default \
+    sl \
+    wget \
+    vim \
+    v4l-utils \
+    xvfb 
+RUN sed -i 's/ universe/ universe multiverse/' /etc/apt/sources.list && \
+	apt-get update && \
+    apt-get install -y snapcraft 
+
+# func 2.2: install common python requirements
+RUN pip3 install \
+    distro \
+    easydict==1.9 \
+    fire \
+    imgaug==0.4.0 \    
+    imageio==2.8.0 \
+    colorama==0.4.4 \
+    cycler==0.10.0 \
+    decorator==4.4.2 \
+    kiwisolver==1.2.0 \
+    matplotlib==3.2.1 \
+    networkx==2.4 \
+    numpy \
+    packaging \
+    pandas \
+    psutil \
+    pytest==5.4.1 \
+    python-dateutil \
+    Pillow==7.1.1 \
+    PyWavelets==1.1.1 \
+    scikit-build \
+    scikit-image==0.16.2 \
+    scipy==1.4.1 \
+    seaborn \
+    Shapely==1.7.0 \
+    tensorboardX==2.0 \  
+    termcolor \  
+    torch==1.6.0 \
+    torchvision==0.7.0 \
+    tqdm \ 
+    pyyaml \
+    virtualenv \
+    virtualenvwrapper \
+	--no-deps
+
+RUN apt-get update &&  cd /bak/ && wget https://bj.bcebos.com/v1/tiev-plus/extern/clang+llvm-9.0.0-x86_64-linux-gnu-ubuntu-18.04.tar.xz &&\
+	apt-get -y install libtinfo-dev libxml2-dev &&\
+        mkdir -p /usr/local && cd /usr/local &&\
+        cp /bak/clang+llvm-9.0.0-x86_64-linux-gnu-ubuntu-18.04.tar.xz . &&\
+        tar xvf clang+llvm-9.0.0-x86_64-linux-gnu-ubuntu-18.04.tar.xz &&\
+	mv clang+llvm-9.0.0-x86_64-linux-gnu-ubuntu-18.04 llvm-9.0.0
+
+ENV PATH="/usr/local/llvm-9.0.0/bin:${PATH}"
+ENV LLVM_CONFIG="/usr/local/llvm-9.0.0/bin/llvm-config"
+RUN pip3 install llvmlite==0.33.0 numba -i http://mirrors.aliyun.com/pypi/simple/ --trusted-host mirrors.aliyun.com 
+
+# func 2.3: install CMake
+RUN wget https://bj.bcebos.com/v1/tiev-plus/extern/cmake-3.17.2.tar.gz &&\
+    tar zvxf cmake-3.17.2.tar.gz && cd cmake-3.17.2 && ./bootstrap &&\ 
+    make -j8 && make install &&\
+    rm -rf cmake*
+
+# func 2.4: Install pybind11
+# RUN git clone https://github.com/pybind/pybind11.git &&\
+#        cd pybind11 && mkdir build && cd build &&\
+#        cmake .. && cmake --build . --config Release --target check
+RUN python3 -m pip install pybind11
+
+# func 2.5: Install OpenCV
+COPY ./scripts/install_opencv.sh /bak/install_opencv.sh
+RUN wget -P /bak https://bj.bcebos.com/v1/tiev-plus/extern/opencv.zip &&\
+	wget -P /bak https://bj.bcebos.com/v1/tiev-plus/extern/opencv_contrib.zip &&\
+	wget -P /bak https://bj.bcebos.com/v1/tiev-plus/extern/No_boostdesc_bgm.i.zip &&\
+	cd /bak && bash /bak/install_opencv.sh && rm -rf /bak/install_opencv.sh  
+
+### func 3: load && install module
+#func 3.1: Install ZCM
+COPY ./scripts/install_zcm.sh /bak/scripts/install_zcm.sh
+RUN bash /bak/scripts/install_zcm.sh && rm -rf /bak/scripts/install_zcm.sh
+
+# func 3.7: install pylon
+WORKDIR /bak/pylon
+RUN pip3 install pyparsing &&\
+        wget -O pylon.deb https://gitlab.com/tjiv/nn_weights/-/raw/master/installers/pylon_6.1.1.19861-deb0_amd64.deb?inline=false &&\
+        dpkg -i pylon.deb; apt-get install -f &&\
+        rm -rf pylon.deb &&\
+        pip3 install git+https://github.com/tjyuyao/bevutils.git@master &&\
+        wget https://bj.bcebos.com/v1/tiev-plus/extern/pypylon-1.4.0-cp36-cp36m-linux_x86_64.whl &&\
+        pip3 install pypylon-1.4.0-cp36-cp36m-linux_x86_64.whl &&\
+        rm -rf pypylon-1.4.0-cp36-cp36m-linux_x86_64.whl
+
+# func 3.9: Install qt5 for mapper
+# ENV QT_QPA_PLATFORM='offscreen'
