@@ -187,10 +187,6 @@ RUN cp -r /usr/include/eigen3/Eigen /usr/include &&\
 #	python3 setup.py bdist_wheel &&\
 # 	cd dist && pip3 install spconv*
 
-# func 4.2: Install osqp
-COPY modules/src/common/osqp/ /bak/osqp/
-RUN cd /bak/osqp/ && mkdir build && cd build && cmake .. -DBUILD_SHARED_LIBS=ON && make -j6 && make install
-
 # func 4.3: Install grpc
 
 RUN cd / && git clone https://gitee.com/tiev-plus/grpc.git \
