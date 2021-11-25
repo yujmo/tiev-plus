@@ -29,7 +29,7 @@ tar zxf ceres-solver-1.14.0.tar.gz
 mkdir ceres-bin
 cd ceres-bin
 cmake ../ceres-solver-1.14.0
-make -j16
+make 
 make test
 # Optionally install Ceres, it can also be exported using CMake which
 # allows Ceres to be used without requiring installation, see the documentation
