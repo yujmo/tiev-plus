@@ -151,7 +151,7 @@ RUN bash /bak/scripts/install_ceres.sh
 # func 3.4: Install pcl for slam
 RUN cd /bak && wget https://bj.bcebos.com/v1/tiev-plus/extern/pcl-1.8.1.tar.gz &&\
 	tar -zxf pcl-1.8.1.tar.gz && cd /bak/pcl-pcl-1.8.1 &&\
-        mkdir build && cd build && cmake .. && make -j16 && make install
+        mkdir build && cd build && cmake .. && make && make install
 
 # func 3.5: install can dependence
 COPY ./modules/extern/can_library/* /lib/
@@ -194,23 +194,23 @@ RUN cd / && git clone https://gitee.com/tiev-plus/grpc.git \
     &&  cd third_party  &&  export THIRD_PARTY_DIR=$(pwd)   \
     &&  mkdir -p ${THIRD_PARTY_DIR}/abseil-cpp/cmake/build  &&  cd ${THIRD_PARTY_DIR}/abseil-cpp/cmake/build    \
     &&  cmake -DCMAKE_BUILD_TYPE=Release -DCMAKE_POSITION_INDEPENDENT_CODE=TRUE ../..   \
-    &&  make -j4 install    \
+    &&  make install    \
     # c-ares
     &&  mkdir -p ${THIRD_PARTY_DIR}/cares/cares/cmake/build &&  cd ${THIRD_PARTY_DIR}/cares/cares/cmake/build   \
     &&  cmake -DCMAKE_BUILD_TYPE=Release ../..  \
-    &&  make -j4 install    \
+    &&  make install    \
     # protobuf
     &&  mkdir -p ${THIRD_PARTY_DIR}/protobuf/cmake/build    &&  cd ${THIRD_PARTY_DIR}/protobuf/cmake/build  \
     &&  cmake -Dprotobuf_BUILD_TESTS=OFF -DCMAKE_BUILD_TYPE=Release ..  \
-    &&  make -j4 install    \
+    &&  make install    \
     # re2
     &&  mkdir -p ${THIRD_PARTY_DIR}/re2/cmake/build &&  cd ${THIRD_PARTY_DIR}/re2/cmake/build   \
     &&  cmake -DCMAKE_BUILD_TYPE=Release -DCMAKE_POSITION_INDEPENDENT_CODE=TRUE ../..   \
-    &&  make -j4 install    \
+    &&  make install    \
     # zlib
     &&  mkdir -p ${THIRD_PARTY_DIR}/zlib/cmake/build    &&  cd ${THIRD_PARTY_DIR}/zlib/cmake/build  \
     &&  cmake -DCMAKE_BUILD_TYPE=Release ../..  \
-    &&  make -j4 install    \
+    &&  make install    \
     # gRPC
     &&  mkdir -p ${THIRD_PARTY_DIR}/../cmake/build  &&  cd ${THIRD_PARTY_DIR}/../cmake/build    \
     &&  cmake ../.. \
@@ -228,7 +228,7 @@ RUN cd / && git clone https://gitee.com/tiev-plus/grpc.git \
 #
 RUN cd / && git clone https://gitee.com/yujmo/googletest.git \
     && cd googletest \
-    && mkdir build && cd build && cmake .. && make -j12 && make install 
+    && mkdir build && cd build && cmake .. && make && make install 
 
 RUN cd /bak/ && git clone https://gitee.com/yujmo/BehaviorTree.CPP.git && cd BehaviorTree.CPP && mkdir build && cd build && cmake .. && make && make install 
 
