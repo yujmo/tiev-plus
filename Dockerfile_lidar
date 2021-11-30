@@ -105,7 +105,7 @@ RUN pip3 install \
     virtualenvwrapper \
 	--no-deps
 
-RUN  cd /bak/ && wget https://bj.bcebos.com/v1/tiev-plus/extern/clang+llvm-9.0.0-x86_64-linux-gnu-ubuntu-18.04.tar.xz &&\
+RUN  cd /bak/ && wget https://gitlab.com/tjiv/tiev-plus-docker/-/raw/develop/tools/clang+llvm-9.0.0-x86_64-linux-gnu-ubuntu-18.04.tar.xz &&\
         apt-get -y install libtinfo-dev libxml2-dev &&\
         mkdir -p /usr/local && cd /usr/local &&\
         cp /bak/clang+llvm-9.0.0-x86_64-linux-gnu-ubuntu-18.04.tar.xz . &&\
@@ -117,7 +117,7 @@ ENV LLVM_CONFIG="/usr/local/llvm-9.0.0/bin/llvm-config"
 RUN pip3 install llvmlite==0.33.0 numba==0.51.2 
 
 # func 2.3: install CMake
-RUN wget https://bj.bcebos.com/v1/tiev-plus/extern/cmake-3.17.2.tar.gz &&\
+RUN wget https://gitlab.com/tjiv/tiev-plus-docker/-/raw/develop/tools/cmake-3.17.2.tar.gz &&\
     tar zvxf cmake-3.17.2.tar.gz && cd cmake-3.17.2 && ./bootstrap &&\
     make -j8 && make install &&\
     rm -rf cmake*
@@ -130,9 +130,9 @@ RUN python3 -m pip install pybind11
 
 # func 2.5: Install OpenCV
 COPY ./scripts/install_opencv.sh /bak/install_opencv.sh
-RUN wget -P /bak/ https://bj.bcebos.com/v1/tiev-plus/extern/opencv.zip &&\
-        wget -P /bak/ https://bj.bcebos.com/v1/tiev-plus/extern/opencv_contrib.zip &&\
-        wget -P /bak/ https://bj.bcebos.com/v1/tiev-plus/extern/No_boostdesc_bgm.i.zip &&\
+RUN wget -P /bak/ https://gitlab.com/tjiv/tiev-plus-docker/-/raw/develop/tools/opencv.zip &&\
+        wget -P https://gitlab.com/tjiv/tiev-plus-docker/-/raw/develop/tools/opencv_contrib.zip &&\
+        wget -P /bak/ https://gitlab.com/tjiv/tiev-plus-docker/-/raw/develop/tools/No_boostdesc_bgm.i.zip &&\
         cd /bak/ && bash install_opencv.sh
 
 ### func 3: load && install module
@@ -149,7 +149,7 @@ COPY ./scripts/install_ceres.sh /bak/scripts/install_ceres.sh
 RUN bash /bak/scripts/install_ceres.sh
 
 # func 3.4: Install pcl for slam
-RUN cd /bak && wget https://bj.bcebos.com/v1/tiev-plus/extern/pcl-1.8.1.tar.gz &&\
+RUN cd /bak && wget https://gitlab.com/tjiv/tiev-plus-docker/-/raw/develop/tools/pcl-1.8.1.tar.gz &&\
 	tar -zxf pcl-1.8.1.tar.gz && cd /bak/pcl-pcl-1.8.1 &&\
         mkdir build && cd build && cmake .. && make && make install
 
@@ -159,11 +159,11 @@ COPY ./modules/extern/can_library/* /lib/
 # func 3.6: install pylon
 WORKDIR /bak/pylon
 RUN pip3 install pyparsing &&\
-        wget -O pylon.deb https://gitlab.com/tjiv/nn_weights/-/raw/master/installers/pylon_6.1.1.19861-deb0_amd64.deb?inline=false &&\
+        wget -O pylon.deb https://gitlab.com/tjiv/tiev-plus-docker/-/raw/develop/tools/pylon_6.1.1.19861-deb0_amd64.deb &&\
         dpkg -i pylon.deb; apt-get install -f &&\
-	pip3 install git+https://gitee.com/yujmo/bevutils.git@master &&\
+	pip3 install git+https://github.com/tjyuyao/bevutils.git@master &&\
         rm -rf pylon.deb &&\
-        wget https://bj.bcebos.com/v1/tiev-plus/extern/pypylon-1.4.0-cp36-cp36m-linux_x86_64.whl &&\
+        wget https://gitlab.com/tjiv/tiev-plus-docker/-/raw/develop/tools/pypylon-1.4.0-cp36-cp36m-linux_x86_64.whl &&\
         pip3 install pypylon-1.4.0-cp36-cp36m-linux_x86_64.whl &&\
         rm -rf pypylon-1.4.0-cp36-cp36m-linux_x86_64.whl
 
@@ -189,7 +189,7 @@ RUN cp -r /usr/include/eigen3/Eigen /usr/include &&\
 
 # func 4.3: Install grpc
 
-RUN cd / && git clone https://gitee.com/tiev-plus/grpc.git \
+RUN cd / && wget https://gitlab.com/tjiv/tiev-plus-docker/-/raw/develop/tools/grpc.tar && tar -vxf grpc.tar \
     && cd grpc \
     &&  cd third_party  &&  export THIRD_PARTY_DIR=$(pwd)   \
     &&  mkdir -p ${THIRD_PARTY_DIR}/abseil-cpp/cmake/build  &&  cd ${THIRD_PARTY_DIR}/abseil-cpp/cmake/build    \
@@ -226,11 +226,11 @@ RUN cd / && git clone https://gitee.com/tiev-plus/grpc.git \
     &&  make -j4 install  &&  cd ../../.. \
     &&  rm -rf grpc
 #
-RUN cd / && git clone https://gitee.com/yujmo/googletest.git \
+RUN cd / && wget https://gitlab.com/tjiv/tiev-plus-docker/-/raw/develop/tools/googletest.tar && tar -xvf googletest.tar \
     && cd googletest \
     && mkdir build && cd build && cmake .. && make && make install 
 
-RUN cd /bak/ && git clone https://gitee.com/yujmo/BehaviorTree.CPP.git && cd BehaviorTree.CPP && mkdir build && cd build && cmake .. && make && make install 
+RUN cd /bak/ && wget https://gitlab.com/tjiv/tiev-plus-docker/-/raw/develop/tools/BehaviorTree.CPP.tar && tar -xvf BehaviorTree.CPP.tar && cd BehaviorTree.CPP && mkdir build && cd build && cmake .. && make && make install 
 
 RUN pip3 install pytest
 #
