@@ -150,8 +150,8 @@ RUN bash /bak/scripts/install_ceres.sh
 
 # func 3.4: Install pcl for slam
 RUN cd /bak && wget https://gitlab.com/tjiv/tiev-plus-docker/-/raw/develop/tools/pcl-1.8.1.tar.gz &&\
-	tar -zxf pcl-1.8.1.tar.gz && cd /bak/pcl-pcl-1.8.1 &&\
-        mkdir build && cd build && cmake .. && make && make install
+		tar -zxf pcl-1.8.1.tar.gz && cd /bak/pcl-pcl-1.8.1 &&\
+		mkdir build && cd build && cmake .. && make && make install
 
 # func 3.5: install can dependence
 COPY ./modules/extern/can_library/* /lib/
@@ -161,7 +161,7 @@ WORKDIR /bak/pylon
 RUN pip3 install pyparsing &&\
         wget -O pylon.deb https://gitlab.com/tjiv/tiev-plus-docker/-/raw/develop/tools/pylon_6.1.1.19861-deb0_amd64.deb &&\
         dpkg -i pylon.deb; apt-get install -f &&\
-	pip3 install git+https://github.com/tjyuyao/bevutils.git@master &&\
+        pip3 install git+https://github.com/tjyuyao/bevutils.git@master &&\
         rm -rf pylon.deb &&\
         wget https://gitlab.com/tjiv/tiev-plus-docker/-/raw/develop/tools/pypylon-1.4.0-cp36-cp36m-linux_x86_64.whl &&\
         pip3 install pypylon-1.4.0-cp36-cp36m-linux_x86_64.whl &&\
