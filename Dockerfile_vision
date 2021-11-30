@@ -125,7 +125,7 @@ RUN python3 -m pip install pybind11
 # func 2.5: Install OpenCV
 COPY ./scripts/install_opencv.sh /bak/install_opencv.sh
 RUN wget -P /bak/ https://gitlab.com/tjiv/tiev-plus-docker/-/raw/develop/tools/opencv.zip &&\
-        wget -P https://gitlab.com/tjiv/tiev-plus-docker/-/raw/develop/tools/opencv_contrib.zip &&\
+        wget -P /bak/ https://gitlab.com/tjiv/tiev-plus-docker/-/raw/develop/tools/opencv_contrib.zip &&\
         wget -P /bak/ https://gitlab.com/tjiv/tiev-plus-docker/-/raw/develop/tools/No_boostdesc_bgm.i.zip &&\
         cd /bak/ && bash install_opencv.sh
 
