@@ -189,49 +189,49 @@ RUN cp -r /usr/include/eigen3/Eigen /usr/include &&\
 
 # func 4.3: Install grpc
 
-RUN cd / && wget https://gitlab.com/tjiv/tiev-plus-docker/-/raw/develop/tools/grpc.tar && tar -vxf grpc.tar \
-    && cd grpc \
-    &&  cd third_party  &&  export THIRD_PARTY_DIR=$(pwd)   \
-    &&  mkdir -p ${THIRD_PARTY_DIR}/abseil-cpp/cmake/build  &&  cd ${THIRD_PARTY_DIR}/abseil-cpp/cmake/build    \
-    &&  cmake -DCMAKE_BUILD_TYPE=Release -DCMAKE_POSITION_INDEPENDENT_CODE=TRUE ../..   \
-    &&  make install    \
-    # c-ares
-    &&  mkdir -p ${THIRD_PARTY_DIR}/cares/cares/cmake/build &&  cd ${THIRD_PARTY_DIR}/cares/cares/cmake/build   \
-    &&  cmake -DCMAKE_BUILD_TYPE=Release ../..  \
-    &&  make install    \
-    # protobuf
-    &&  mkdir -p ${THIRD_PARTY_DIR}/protobuf/cmake/build    &&  cd ${THIRD_PARTY_DIR}/protobuf/cmake/build  \
-    &&  cmake -Dprotobuf_BUILD_TESTS=OFF -DCMAKE_BUILD_TYPE=Release ..  \
-    &&  make install    \
-    # re2
-    &&  mkdir -p ${THIRD_PARTY_DIR}/re2/cmake/build &&  cd ${THIRD_PARTY_DIR}/re2/cmake/build   \
-    &&  cmake -DCMAKE_BUILD_TYPE=Release -DCMAKE_POSITION_INDEPENDENT_CODE=TRUE ../..   \
-    &&  make install    \
-    # zlib
-    &&  mkdir -p ${THIRD_PARTY_DIR}/zlib/cmake/build    &&  cd ${THIRD_PARTY_DIR}/zlib/cmake/build  \
-    &&  cmake -DCMAKE_BUILD_TYPE=Release ../..  \
-    &&  make install    \
-    # gRPC
-    &&  mkdir -p ${THIRD_PARTY_DIR}/../cmake/build  &&  cd ${THIRD_PARTY_DIR}/../cmake/build    \
-    &&  cmake ../.. \
-        -DCMAKE_BUILD_TYPE=Release  \
-        -DgRPC_INSTALL=ON   \
-        -DgRPC_BUILD_TESTS=OFF  \
-        -DgRPC_CARES_PROVIDER=package   \
-        -DgRPC_ABSL_PROVIDER=package    \
-        -DgRPC_PROTOBUF_PROVIDER=package    \
-        -DgRPC_RE2_PROVIDER=package \
-        -DgRPC_SSL_PROVIDER=package \
-        -DgRPC_ZLIB_PROVIDER=package    \
-    &&  make -j4 install  &&  cd ../../.. \
-    &&  rm -rf grpc
+# RUN cd / && wget https://gitlab.com/tjiv/tiev-plus-docker/-/raw/develop/tools/grpc.tar && tar -vxf grpc.tar \
+#    && cd grpc \
+#    &&  cd third_party  &&  export THIRD_PARTY_DIR=$(pwd)   \
+#    &&  mkdir -p ${THIRD_PARTY_DIR}/abseil-cpp/cmake/build  &&  cd ${THIRD_PARTY_DIR}/abseil-cpp/cmake/build    \
+#    &&  cmake -DCMAKE_BUILD_TYPE=Release -DCMAKE_POSITION_INDEPENDENT_CODE=TRUE ../..   \
+#    &&  make install    \
+#    # c-ares
+#    &&  mkdir -p ${THIRD_PARTY_DIR}/cares/cares/cmake/build &&  cd ${THIRD_PARTY_DIR}/cares/cares/cmake/build   \
+#    &&  cmake -DCMAKE_BUILD_TYPE=Release ../..  \
+#    &&  make install    \
+#    # protobuf
+#    &&  mkdir -p ${THIRD_PARTY_DIR}/protobuf/cmake/build    &&  cd ${THIRD_PARTY_DIR}/protobuf/cmake/build  \
+#    &&  cmake -Dprotobuf_BUILD_TESTS=OFF -DCMAKE_BUILD_TYPE=Release ..  \
+#    &&  make install    \
+#    # re2
+#    &&  mkdir -p ${THIRD_PARTY_DIR}/re2/cmake/build &&  cd ${THIRD_PARTY_DIR}/re2/cmake/build   \
+#    &&  cmake -DCMAKE_BUILD_TYPE=Release -DCMAKE_POSITION_INDEPENDENT_CODE=TRUE ../..   \
+#    &&  make install    \
+#    # zlib
+#    &&  mkdir -p ${THIRD_PARTY_DIR}/zlib/cmake/build    &&  cd ${THIRD_PARTY_DIR}/zlib/cmake/build  \
+#    &&  cmake -DCMAKE_BUILD_TYPE=Release ../..  \
+#    &&  make install    \
+#    # gRPC
+#    &&  mkdir -p ${THIRD_PARTY_DIR}/../cmake/build  &&  cd ${THIRD_PARTY_DIR}/../cmake/build    \
+#    &&  cmake ../.. \
+#        -DCMAKE_BUILD_TYPE=Release  \
+#        -DgRPC_INSTALL=ON   \
+#        -DgRPC_BUILD_TESTS=OFF  \
+#        -DgRPC_CARES_PROVIDER=package   \
+#        -DgRPC_ABSL_PROVIDER=package    \
+#        -DgRPC_PROTOBUF_PROVIDER=package    \
+#        -DgRPC_RE2_PROVIDER=package \
+#        -DgRPC_SSL_PROVIDER=package \
+#        -DgRPC_ZLIB_PROVIDER=package    \
+#    &&  make -j4 install  &&  cd ../../.. \
+#    &&  rm -rf grpc
 #
-RUN cd / && wget https://gitlab.com/tjiv/tiev-plus-docker/-/raw/develop/tools/googletest.tar && tar -xvf googletest.tar \
-    && cd googletest \
-    && mkdir build && cd build && cmake .. && make && make install 
-
-RUN cd /bak/ && wget https://gitlab.com/tjiv/tiev-plus-docker/-/raw/develop/tools/BehaviorTree.CPP.tar && tar -xvf BehaviorTree.CPP.tar && cd BehaviorTree.CPP && mkdir build && cd build && cmake .. && make && make install 
-
-RUN pip3 install pytest
+#RUN cd / && wget https://gitlab.com/tjiv/tiev-plus-docker/-/raw/develop/tools/googletest.tar && tar -xvf googletest.tar \
+#    && cd googletest \
+#    && mkdir build && cd build && cmake .. && make && make install 
 #
-WORKDIR /tiev-plus
+#RUN cd /bak/ && wget https://gitlab.com/tjiv/tiev-plus-docker/-/raw/develop/tools/BehaviorTree.CPP.tar && tar -xvf BehaviorTree.CPP.tar && cd BehaviorTree.CPP && mkdir build && cd build && cmake .. && make && make install 
+
+#RUN pip3 install pytest
+#
+#WORKDIR /tiev-plus
