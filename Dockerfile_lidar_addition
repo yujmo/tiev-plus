@@ -44,7 +44,7 @@ RUN cd / && wget https://gitlab.com/tjiv/tiev-plus-docker/-/raw/develop/tools/go
     && cd googletest \
     && mkdir build && cd build && cmake .. && make && make install 
 
-RUN cd /bak/ && wget https://gitlab.com/tjiv/tiev-plus-docker/-/raw/develop/tools/BehaviorTree.CPP.tar && tar -xvf BehaviorTree.CPP.tar && cd BehaviorTree.CPP && mkdir build && cd build && cmake .. && make && ake install 
+RUN cd /bak/ && wget https://gitlab.com/tjiv/tiev-plus-docker/-/raw/develop/tools/BehaviorTree.CPP.tar && tar -xvf BehaviorTree.CPP.tar && cd BehaviorTree.CPP && mkdir build && cd build && cmake .. && make && make install 
 
 RUN pip3 install pytest
 
