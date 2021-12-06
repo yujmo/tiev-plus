@@ -16,4 +16,3 @@
 ./test_py_modules.sh
 ```
 
-## SCripts for launch
